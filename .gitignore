@@ -1,52 +1,96 @@
-# Prerequisites
-*.d
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-# Object files
-*.o
-*.ko
-*.obj
-*.elf
+typedef struct node *nodePointer;
+typedef struct node { 
+int v1; int v2; nodePointer link1, link2;
+}node;
+nodePointer *adjList;
+nodePointer cur = NULL;
+int v, e;
 
-# Linker output
-*.ilk
-*.map
-*.exp
+void insert(int, int);
+void makeLink(nodePointer);
+void print(int);
 
-# Precompiled Headers
-*.gch
-*.pch
+int main(){
+int i; int v1, v2;
+FILE *fp; 
+fopen_s(&fp, "input.txt", "r");
 
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
+fscanf_s(fp, "%d %d", &v, &e);
+adjList = malloc(sizeof(nodePointer)*v); 
+for (i = 0; i < v; i++)  adjList[i] = NULL;
 
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
+while (fscanf_s(fp, "%d %d", &v1, &v2) != EOF)   insert(v1, v2); 
+makeLink(cur);
 
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
+printf("<<<<< edges incident to each vertex >>>>>\n"); 
+print(1); 
+printf("\n"); 
+print(2);
+return 0;
+}
 
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
+void insert(int v1, int v2){ 
+nodePointer temp; 
+temp = malloc(sizeof(node)); 
+temp->v1 = v1; temp->v2 = v2; 
+temp->link1 = temp->link2 = NULL; 
+if (cur)  temp->link1 = cur; 
+cur = temp;
+}
 
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
+void makeLink(nodePointer cur)
+{ nodePointer temp; 
+if (cur) {  
+  temp = cur->link1;  
+  if (!adjList[cur->v1]) {   
+    adjList[cur->v1] = cur;   
+    cur->link1 = NULL;  
+  }  
+  else {   
+    cur->link1 = adjList[cur->v1];   
+    adjList[cur->v1] = cur;  
+  }  
+  if (!adjList[cur->v2]) {   
+    adjList[cur->v2] = cur;   
+    cur->link2 = NULL;  
+  }  
+  else {   
+    cur->link2 = adjList[cur->v2];   
+    adjList[cur->v2] = cur;  
+  }  
+  makeLink(temp); }
+ }
+void print(int check) 
+{ 
+int i; 
+nodePointer ptr; 
+if (check == 1) {  
+printf("간선의 정점 출력 순서 - 입력데이터 순서대로\n");  
+for (i = 0; i < v; i++) {   
+printf("edges incident to vertex %d : ", i);  
+for (ptr = adjList[i]; ptr;) {   
+printf("(%d, %d) ", ptr->v1, ptr->v2);    
+if (i == ptr->v1) ptr = ptr->link1;    
+else ptr = ptr->link2;  
+}  
+printf("\n");
+} 
+} 
+else {  
+printf("간선의 정점 출력 순서 - 헤더노드 정점이 먼저 오게\n");  
+for (i = 0; i < v; i++) {  
+printf("edges incident to vertex %d : ", i);  
+for (ptr = adjList[i]; ptr;) {  
+if(ptr->v1 == i)   printf("(%d, %d) ", ptr->v1, ptr->v2);    
+else     printf("(%d, %d) ", ptr->v2, ptr->v1);    
+if (i == ptr->v1) ptr = ptr->link1;   
+else ptr = ptr->link2;   
+}   
+printf("\n");  
+} 
+}
+}
